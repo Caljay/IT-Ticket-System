@@ -114,6 +114,7 @@ void createTicket(Ticket** tickets, int id) {
 
 
 //for ticket closing
+
 char* getSolution() {
 
 	char* solution = malloc(sizeof(char) * 1000);
@@ -124,7 +125,6 @@ char* getSolution() {
 
 
 }
-
 
 int getOpenTicketCount(Ticket** tickets) {
 
@@ -151,7 +151,6 @@ int getOpenTicketCount(Ticket** tickets) {
 
 
 }
-
 
 void closeTicket(Ticket** tickets) {
 
@@ -252,17 +251,12 @@ void getTicketsByPriority(Ticket** tickets) {
 
 
 
-
-
-
 	}
 	
-
 
 	printf("\n\n");
 
 }
-
 
 
 //for niceities
@@ -289,15 +283,8 @@ void printAllTickets(Ticket** tickets) {
 		printf("\n");
 
 	
-
-
-
-
 }
 
-/*
-just some temples of functions i am going to need
-*/
  
 void freeAllMemory(Ticket* tickets) {
 	if (tickets == NULL) return;
@@ -314,8 +301,6 @@ void freeAllMemory(Ticket* tickets) {
 	free(tickets);
 
 	//not sure if i need to free the memory allocated for the strings INSIDE of the structs
-
-
 
 
 }
@@ -368,7 +353,6 @@ void startTicketManagement() {
 		}
 
 
-
 	}
 	printf("Freeing all memory...\n");
 	freeAllMemory(tickets);
@@ -376,32 +360,12 @@ void startTicketManagement() {
 	//free all the memmory
 
 
-
-
-
-
-
-
-
 }
-
 
 
 int main(void){
 
 	startTicketManagement();
 
-
-
-
-
-
 	return 0;
-
-
-
-
-
-
-
 }
