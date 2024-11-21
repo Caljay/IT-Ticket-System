@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /*
 TO DO
@@ -19,29 +20,57 @@ typedef struct ticket
 	int is_closed;
 	char* issue_solution;
 	struct ticket* nextTicket;
-}Ticket;
+} Ticket;
 
+//prototype so that the ticket creation functions may access it
+void rm_newline(char arr[]);
+//checking for null pointers
+void checkForNullPointer(void* ptr) {
+
+	if (ptr == NULL) {
+		printf("Memory allocation failed");
+		exit(1);
+	}
+
+}
 //all the  functions for ticket creation and addition
 
 char* getName() {
 
+	//alllocate the max lenth for the name to realloc it later
 	char* name = malloc(sizeof(char) * 50);
+	checkForNullPointer(name);
+
 	printf("Please Enter your name: ");
 	fgets(name, 50, stdin);
+	rm_newline(name);
+	name = (char*)realloc(name, sizeof(char) * strlen(name) + 1);
+	checkForNullPointer(name);
+
 	return name;
 
 
 }
 char* getEmail() {
 	char* email = malloc(sizeof(char) * 50);
+	checkForNullPointer(email);
+
 	printf("Please Enter your email: ");
 	fgets(email, 50, stdin);
+	rm_newline(email);
+	email = (char*)realloc(email, sizeof(char) * strlen(email) + 1);
+	checkForNullPointer(email);
+
 	return email;
 }
 char* getDate() {
 	char* date = malloc(sizeof(char) * 15); //less characters needed due to the input format
+	checkForNullPointer(date);
 	printf("Please Enter the date MM/DD/YYYY: ");
 	fgets(date, 15, stdin);
+	rm_newline(date);
+	date = (char*)realloc(date, sizeof(char) * strlen(date) + 1);
+	checkForNullPointer(date);
 	return date;
 
 }
@@ -50,13 +79,21 @@ int getPriority() {
 	printf("What is the priority of this issue. 1 = LOW 5 = HIGH: ");
 	priority = (int)getchar() - 48;
 	getchar(); //capture newline
+	if (priority > 5 || priority < 1) {
+		priority = 1;
+	}
 	return priority;
 }
 char* getDescription() {
 
-	char* description = malloc(sizeof(char) * 1000);
+	char* description = malloc(sizeof(char) * 1000); //set the max that the user can intially do, then reallocate it later on
+	checkForNullPointer(description);
 	printf("Please describe the issue (1000 character max): ");
 	fgets(description, 1000, stdin);
+	rm_newline(description);
+	description = (char*)realloc(description, sizeof(char) * strlen(description) + 1);
+	checkForNullPointer(description);
+
 	return description;
 
 
@@ -70,11 +107,11 @@ void createTicket(Ticket** tickets, int id) {
 	if (*tickets == NULL) { //if there are no current tickets
 
 		*tickets = (Ticket*)malloc(sizeof(Ticket));
+		checkForNullPointer(tickets);
+
 
 		(*tickets)->id = id;
 		(*tickets)->name = getName();
-		printf("%s ", (*tickets)->name);
-
 		(*tickets)->email = getEmail();
 		(*tickets)->date = getDate();
 		(*tickets)->priority = getPriority();
@@ -95,11 +132,10 @@ void createTicket(Ticket** tickets, int id) {
 	
 
 	newTicket = (Ticket*)malloc(sizeof(Ticket));
-	
+	checkForNullPointer(newTicket);
+
 	newTicket->id = id;
 	newTicket->name = getName();
-	printf("%s ", newTicket->name);
-
 	newTicket->email = getEmail();
 	newTicket->date = getDate();
 	newTicket->priority = getPriority();
@@ -117,9 +153,16 @@ void createTicket(Ticket** tickets, int id) {
 
 char* getSolution() {
 
+	//intilal size to be relloced later
 	char* solution = malloc(sizeof(char) * 1000);
+	checkForNullPointer(solution);
+
 	printf("What was the solution for this issue: ");
-	fgets(solution, 1000, stdin);	//getchar(); //capture newline
+	fgets(solution, 1000, stdin);
+	rm_newline(solution);
+	solution = (char*)realloc(solution, sizeof(char) * strlen(solution) + 1);
+	checkForNullPointer(solution);
+
 	return solution;
 
 
@@ -128,9 +171,10 @@ char* getSolution() {
 
 int getOpenTicketCount(Ticket** tickets) {
 
+	if ((*tickets) == NULL) return 0;
+
 	int ticketsOpen = 0;
 	Ticket* tempTicket = *tickets;
-	if (*tickets == NULL) return;
 
 	while (tempTicket->nextTicket != NULL) {
 
@@ -153,6 +197,11 @@ int getOpenTicketCount(Ticket** tickets) {
 }
 
 void closeTicket(Ticket** tickets) {
+
+	if (*tickets == NULL) {
+		printf("No open tickets"); 
+		return;
+	}
 
 	int closeID = 0;
 	int wasFound = 0; //check to see if the id was found
@@ -207,8 +256,19 @@ void closeTicket(Ticket** tickets) {
 void getTicketsByPriority(Ticket** tickets) {
 
 	//need to rank the tickets by priority...
+	if (*tickets == NULL) {
+		printf("There are no tickets");
+		return;
+	}
+
 	int openTickets = getOpenTicketCount(tickets);
+	if (openTickets == 0) {
+		printf("There are currently no open tickets!");
+		return;
+	}
 	int* ticketID_Priorties = malloc(sizeof(int) * openTickets); //the most tickets within a certain priortiy is equal to the tickets currently open
+	checkForNullPointer(ticketID_Priorties);
+
 	int ticketID_PrioritiyArrayIndex = 0;
 	Ticket* tempTicket = *tickets;
 
@@ -218,7 +278,7 @@ void getTicketsByPriority(Ticket** tickets) {
 
 		while (tempTicket->nextTicket != NULL) {
 		
-			if (tempTicket->priority == priority) {
+			if (tempTicket->priority == priority && tempTicket->is_closed == 0) {
 
 				ticketID_Priorties[ticketID_PrioritiyArrayIndex] = tempTicket->id;
 
@@ -253,7 +313,7 @@ void getTicketsByPriority(Ticket** tickets) {
 
 	}
 	
-
+	free(ticketID_Priorties);
 	printf("\n\n");
 
 }
@@ -262,25 +322,41 @@ void getTicketsByPriority(Ticket** tickets) {
 //for niceities
 void printAllTickets(Ticket** tickets) {
 	
+	if (*tickets == NULL) {
+		printf("There are no tickets");  
+		return;
+	}
+
+
 	Ticket* tempTicket = *tickets;
 	printf("Printing all tickets\n");
-	if (tempTicket == NULL) return;
 
 
 		while (tempTicket->nextTicket != NULL) {
-
-			printf("ID: %d Name: %s Date: %s Priority: %d Closed: %d Description: %s Solution: %s",
-				tempTicket->id, (tempTicket)->name, tempTicket->date, tempTicket->priority, tempTicket->is_closed, tempTicket->issue_description, tempTicket->issue_solution);
+			if (tempTicket->is_closed) {
+				printf("ID: %d Name: %s Date: %s Priority: %d Closed: %d Description: %s Solution: %s",
+					tempTicket->id, (tempTicket)->name, tempTicket->date, tempTicket->priority, tempTicket->is_closed, tempTicket->issue_description, tempTicket->issue_solution);
+			}
+			else {
+				printf("ID: %d Name: %s Date: %s Priority: %d Closed: %d Description: %s",
+					tempTicket->id, (tempTicket)->name, tempTicket->date, tempTicket->priority, tempTicket->is_closed, tempTicket->issue_description);
+			}
 			printf("\n");
 
 
 			tempTicket = tempTicket->nextTicket;
 		}
-		printf("ID: %d Name: %s Date: %s Priority: %d Closed: %d Description: %s Solution: %s",
-			tempTicket->id, (tempTicket)->name, tempTicket->date, tempTicket->priority, tempTicket->is_closed, tempTicket->issue_description, tempTicket->issue_solution);
-		printf("\n");
-		printf("\n");
-		printf("\n");
+
+
+		if (tempTicket->is_closed) {
+			printf("ID: %d Name: %s Date: %s Priority: %d Closed: %d Description: %s Solution: %s",
+				tempTicket->id, (tempTicket)->name, tempTicket->date, tempTicket->priority, tempTicket->is_closed, tempTicket->issue_description, tempTicket->issue_solution);
+		}
+		else {
+			printf("ID: %d Name: %s Date: %s Priority: %d Closed: %d Description: %s",
+				tempTicket->id, (tempTicket)->name, tempTicket->date, tempTicket->priority, tempTicket->is_closed, tempTicket->issue_description);
+		}printf("\n\n\n");
+		
 
 	
 }
@@ -294,7 +370,6 @@ void freeAllMemory(Ticket* tickets) {
 		tempTicket = tickets;
 		tickets = tickets->nextTicket;
 		free(tempTicket);
-//		1, 2, 3 NULL
 
 
 	}
@@ -305,22 +380,38 @@ void freeAllMemory(Ticket* tickets) {
 
 }
 
+void rm_newline(char arr[]) {
+
+	int index = 0;
+	while (arr[index] != '\0') {
+
+		if (arr[index] == '\n') {
+			arr[index] = '\0';
+
+		}
+
+		index++;
+	}
+
+
+}
+
+
 //the main part where the user may create/close tickets
 void startTicketManagement() {
 
 	//the id of the next ticket that may be created
 	int nextID = 1; 
-	Ticket* tickets; //set this to null   will end being the head of a linked list null pointer
-	tickets = NULL;
+	Ticket* tickets = NULL; //set this to null   will end being the head of a linked list null pointer
 	char userOption = '\0';
 
 	while (1) {
 
-
-		printf("Enter the number for option you would like\n(1) Create Ticket\n(2) Close Ticket\n(3)View All Tickets\n(4) Open Ticket Count\n(5) Tickets by Priority\n(6) Exit\nEnter a number: ");
+		printf("\n\n");
+		printf("Enter the number for option you would like\n(1) Create Ticket\n(2) Close Ticket\n(3) View All Tickets\n(4) Open Ticket Count\n(5) Tickets by Priority\n(6) Exit\nEnter a number: ");
 		userOption = getchar();
 		getchar(); //capture the newline character
-
+		printf("\n\n");
 		switch (userOption)
 		{
 		case '1':
@@ -335,7 +426,7 @@ void startTicketManagement() {
 			printAllTickets(&tickets);
 			break;
 		case '4':
-			printf("There are %d open tickets", getOpenTicketCount(&tickets));
+			printf("There are %d open tickets\n", getOpenTicketCount(&tickets));
 			break;
 		case '5':
 			getTicketsByPriority(&tickets);
@@ -355,9 +446,9 @@ void startTicketManagement() {
 
 	}
 	printf("Freeing all memory...\n");
-	freeAllMemory(tickets);
+	freeAllMemory(tickets); 	//free all the memmory
+
 	printf("Thank you!");
-	//free all the memmory
 
 
 }
